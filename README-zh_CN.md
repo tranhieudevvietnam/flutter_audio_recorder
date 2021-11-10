@@ -2,34 +2,34 @@
 <p align="left">
   <a href="https://pub.dartlang.org/packages/flutter_audio_recorder"><img alt="pub version" src="https://img.shields.io/pub/v/flutter_audio_recorder.svg?style=flat-square"></a>
   <a href="https://github.com/Solido/awesome-flutter">
-   <img alt="Awesome Flutter" src="https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=flat-square" />
-</a>
+     <img alt="Awesome Flutter" src="https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=flat-square" />
 </p>
 
-English | [简体中文](./README-zh_CN.md)
+[English](./README.md) | 简体中文
 
-Flutter Audio Record Plugin that supports `Record` `Pause` `Resume` `Stop` and provide access to audio level metering properties `average power` `peak power`
-#### Works for both `Android` and `iOS`
+Flutter 录音插件 支持录音/暂停/继续/停止, 可以在录音的同时获取到底层提供的音频信息（如声音强度）.
+#### 支持 `Android` and `iOS`
 
 <img src="https://user-images.githubusercontent.com/10917606/64927086-b2bcda00-d838-11e9-9ab8-bad78a95f02c.gif" width="30%" height="30%" />
 
-#### Code Samples: 
+## 安装方式
+加入 `flutter_audio_recorder` 到你的 `pubspec.yaml`
+
+#### 代码示例项目: 
 - [Flutter Application ( using AndroidX )](https://github.com/nikli2009/flutter_audio_recorder_demo/tree/android-x)
 - [Flutter Application ( without AndroidX )](https://github.com/nikli2009/flutter_audio_recorder_demo/tree/non-android-x)
 
-## Installation
-add `flutter_audio_recorder` to your `pubspec.yaml`
-
-## iOS Permission 
-1. Add usage description to plist 
+## 权限配置
+## iOS 权限 
+1. 修改plist, 加入下面这一条
 ```
 <key>NSMicrophoneUsageDescription</key>
 <string>Can We Use Your Microphone Please</string>
 ```
-2. Then use `hasPermission` api to ask user for permission when needed
+2. 然后在页面需要录音功能的时候调用 `hasPermission` API
 
 ## Android Permission
-1. Add `uses-permission` to `./android/app/src/main/AndroidManifest.xml` in xml root level like below
+1. 加 `uses-permission` 到 `./android/app/src/main/AndroidManifest.xml`，跟<application>平级， 像下面这样
 ```
     ...
     </application>
@@ -38,59 +38,63 @@ add `flutter_audio_recorder` to your `pubspec.yaml`
     ...
 </manifest>
 ```
-2. Then use `hasPermission` api to ask user for permission when needed
+2. 然后在页面需要录音功能的时候调用 `hasPermission` API
 
-## Configuration
-#### iOS Deployment Target is 8.0 above
+
+## 其他配置
+#### iOS Deployment Target is 8.0
 #### Android
-- AndroidX: use latest version (`0.5.x`)
-- Legacy Android: use old version (`0.4.9`)
+- 开启AndroidX的项目: 请使用最新版本 (`0.5.x`)
+- 未使用AndroidX的项目: 可以使用旧版本 (`0.4.9`)
 
-## Usage 
-Recommended API Usage: `hasPermission` => `init` > `start` -> (`pause` <-> `resume`) * n -> `stop`, call `init` again before `start` another recording
+### 注意: iOS Deployment Target 是 8.0
 
-#### Always check permission first(it will request permission if permission has not been set to true/false yet, otherwise it will return the result of recording permission)
+## 用法 
+建议使用方式: `hasPermission` => `init` > `start` -> (`pause` <-> `resume`) * n -> `stop` ）, 重新开始新录音的话 流程一样
+
+#### 先需要请求权限（如果已经请求过 则会直接返回结果）
 ```
 bool hasPermission = await FlutterAudioRecorder.hasPermissions;
 ```
 
-#### `Initialize` (run this before `start`, so we could check if file with given name already exists)
+#### Init初始化 (在`录音前`, 调用`初始化`方法，检查文件有无重复)
 ```
-var recorder = FlutterAudioRecorder("file_path.mp4"); // .wav .aac .m4a
+var recorder = FlutterAudioRecorder("filename.mp4"); // .wav .aac .m4a
 await recorder.initialized;
 ```
 
-or 
+或者
 
 ```
 var recorder = FlutterAudioRecorder("file_path", audioFormat: AudioFormat.AAC); // or AudioFormat.WAV
 await recorder.initialized;
 ```
 
-##### Sample Rate
+##### 采样率
 ```
-var recorder = FlutterAudioRecorder("file_path", audioFormat: AudioFormat.AAC, sampleRate: 22000); // sampleRate is 16000 by default
+var recorder = FlutterAudioRecorder("file_path", audioFormat: AudioFormat.AAC, sampleRate: 22000); // 采样率默认值 16000
 await recorder.initialized;
 ```
 
-##### Audio Extension and Format Mapping
+
+##### Audio Extension 和 Format 对应关系
 | Audio Format  | Audio Extension List |
 | ------------- | ------------- |
 | AAC  | .m4a .aac .mp4  |
 | WAV  | .wav  |
 
-#### Start recording
+#### Start开始录音
 ```
 await recorder.start();
 var recording = await recorder.current(channel: 0);
 ```
 
-#### Get recording details
+#### Current获取当前录音状态信息
 ```
 var current = await recording.current(channel: 0);
 // print(current.status);
 ```
-You could use a timer to access details every 50ms(simply cancel the timer when recording is done)
+设置一个Timer，定期获取信息（录音结束后，记得`cancel`）
 ```
 new Timer.periodic(tick, (Timer t) async {
         var current = await recording.current(channel: 0);
@@ -100,6 +104,7 @@ new Timer.periodic(tick, (Timer t) async {
       });
 ```
 
+#### 录音状态 - 数据结构
 ##### Recording
 | Name  | Description |
 | ------------- | ------------- |
@@ -110,35 +115,35 @@ new Timer.periodic(tick, (Timer t) async {
 | metering  | AudioMetering  |
 | status  | RecordingStatus  |
 
-##### Recording.metering
+##### Recording.metering （声音强度）
 | Name  | Description |
 | ------------- | ------------- |
-| peakPower  | double  |
-| averagePower  | double  |
-| isMeteringEnabled  | bool  |
+| peakPower  | double, 强度极值  |
+| averagePower  | double, 强度平均值  |
+| isMeteringEnabled  | bool, 是否启用（True）  |
 
 ##### Recording.status
 `Unset`,`Initialized`,`Recording`,`Paused`,`Stopped`
 
 
-#### Pause
+#### Pause暂停录音
 ```
 await recorder.pause();
 ```
 
-#### Resume
+#### Resume继续录音
 ```
 await recorder.resume();
 ```
 
-#### Stop (after `stop`, run `init` again to create another recording)
+#### Stop停止录音 (停止之后 `stop`, 需再次执行 `init` 重新指定新的文件名，以创建新的录音)
 ```
 var result = await recorder.stop();
 File file = widget.localFileSystem.file(result.path);
 ```
 
 ## Example
-Please check example app using Xcode.
+用Xcode打开Example项目可以查看示例
 
 
 ## Getting Started
