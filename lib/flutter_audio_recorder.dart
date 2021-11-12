@@ -4,12 +4,13 @@ import 'dart:io';
 import 'package:file/local.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
+import 'package:permission_handler/permission_handler.dart';
 
 /// Audio Recorder Plugin
 class FlutterAudioRecorder {
   static const MethodChannel _channel =
       const MethodChannel('flutter_audio_recorder');
-  static const String DEFAULT_EXTENSION = '.m4a';
+  static const String DEFAULT_EXTENSION = '.mp3';
   static LocalFileSystem fs = LocalFileSystem();
 
   String? _path;
@@ -28,6 +29,14 @@ class FlutterAudioRecorder {
 
   /// Initialized recorder instance
   Future _init(String path, AudioFormat? audioFormat, int sampleRate) async {
+    // Check permission status
+    PermissionStatus status = await Permission.microphone.status;
+    // Request permission
+    if (status != PermissionStatus.granted &&
+        status != PermissionStatus.permanentlyDenied) {
+      status = await Permission.microphone.request();
+    }
+
     String extension;
     String extensionInPath;
     if (path != null) {

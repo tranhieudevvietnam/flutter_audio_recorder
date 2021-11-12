@@ -14,7 +14,7 @@ dependencies:
   flutter:
     sdk: flutter
   file: ^6.1.2
-
+  permission_handler:
 
 dev_dependencies:
   flutter_test:
