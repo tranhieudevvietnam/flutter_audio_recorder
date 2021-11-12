@@ -10,7 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 class FlutterAudioRecorder {
   static const MethodChannel _channel =
       const MethodChannel('flutter_audio_recorder');
-  static const String DEFAULT_EXTENSION = '.mp3';
+  static const String DEFAULT_EXTENSION = '.ma4';
   static LocalFileSystem fs = LocalFileSystem();
 
   String? _path;
